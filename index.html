@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Cifra Julio Cesar</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+    <script
+      stc="https://cdnjs.cloudflare.com/ajax/libs/js-sha1/0.6.0/sha1.js"
+    ></script>
+  </head>
+  <body>
+    <form
+      action="https://api.codenation.dev/v1/challenge/dev-ps/submit-solution?token=ca09725f155bd686e9f7af7d2268f782c3b30c9f"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <input type="file" name="answer" id="answer" />
+      <button type="submit">Enviar</button>
+    </form>
+    <script>
+      window.onload = function() {
+        axios
+          .get('https://api.codenation.dev/v1/challenge/dev-ps/generate-data', {
+            params: {
+              token: 'ca09725f155bd686e9f7af7d2268f782c3b30c9f',
+            },
+          })
+          .then(({ data }) => {
+            const { numero_casas } = data;
+            let { cifrado, decifrado, resumo_criptografico } = data;
+            const abc = [
+              'a',
+              'b',
+              'c',
+              'd',
+              'e',
+              'f',
+              'g',
+              'h',
+              'i',
+              'j',
+              'k',
+              'l',
+              'm',
+              'n',
+              'o',
+              'p',
+              'q',
+              'r',
+              's',
+              't',
+              'u',
+              'v',
+              'w',
+              'x',
+              'y',
+              'z',
+            ];
+            let arrayCifrado = Array.from(cifrado);
+            decifrado = arrayCifrado
+              .map((char, index) => {
+                // let indexCharAbc = cifrado.charCodeAt(index);
+                // if (
+                //   (indexCharAbc >= 47 && indexCharAbc <= 57) ||
+                //   indexCharAbc === 46
+                // )
+                //   return String.fromCharCode(indexCharAbc);
+                // if (indexCharAbc + numero_casas > 126)
+                //   return String.fromCharCode(indexCharAbc + numero_casas - 126);
+                // return String.fromCharCode(indexCharAbc + numero_casas);
+                let indexCharAbc = abc.findIndex(elem => elem === char);
+                let newChar;
+
+                if (indexCharAbc === -1) return char;
+
+                if (indexCharAbc - numero_casas < 0) {
+                  indexCharAbc = abc.length + (indexCharAbc - numero_casas);
+                  return abc[indexCharAbc];
+                }
+
+                return abc[indexCharAbc - numero_casas];
+              })
+              .join('');
+
+            const newData = {
+              ...data,
+              decifrado,
+              resumo_criptografico: CryptoJS.SHA1(decifrado).toString(
+                CryptoJS.enc.Hex
+              ),
+            };
+            download(JSON.stringify(newData), 'answer.json', 'text/plain');
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      };
+
+      function download(content, fileName, contentType) {
+        var a = document.createElement('a');
+        var file = new Blob([content], { type: contentType });
+        a.href = URL.createObjectURL(file);
+        a.download = fileName;
+        a.text = 'Baixar';
+        document.querySelector('body').appendChild(a);
+      }
+    </script>
+  </body>
+</html>
